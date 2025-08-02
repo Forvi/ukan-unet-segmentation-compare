@@ -1,0 +1,22 @@
+--extra-index-url https://download.pytorch.org/whl/cu118
+torch
+torchvision
+numpy
+scikit-learn
+pandas
+matplotlib
+seaborn
+timm
+lightning
+pytorch-lightning
+albumentations
+ttach
+numpy
+tqdm
+opencv-python
+scipy
+matplotlib
+einops
+addict
+ftfy
+regex
