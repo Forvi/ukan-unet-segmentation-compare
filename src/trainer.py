@@ -21,51 +21,59 @@ class Trainer():
         self.device = device
         self.epochs = epochs
 
-    
-    def _train_epochs(self):
+    def _train_epoch(self):
         self.model.train()
         epoch_loss = 0.0
 
-        for imgs, masks in self.train_loader:
-            self.optimizer.zero_grad
+        for imgs, masks in tqdm(self.train_loader, desc="Training", leave=False):
+            imgs = imgs.to(self.device)
+            masks = masks.to(self.device)
+
+            self.optimizer.zero_grad()
 
             output = self.model(imgs)
-            loss = self.criterion(output, masks)
+
+            output_img = torch.Tensor(output[0])
+            output_mask = torch.Tensor(output[1])
+
+            loss = self.criterion(output_img, output_mask)
 
             loss.backward()
             self.optimizer.step()
 
-            epoch_loss += loss.item()
-        
+            epoch_loss += loss.item() * imgs.size(0)
+
         total_loss = epoch_loss / len(self.train_loader.dataset)
         return total_loss
 
-    def _test_epochs(self):
+    def _validate_epoch(self):
         self.model.eval()
         epoch_loss = 0.0
 
         with torch.no_grad():
-            for imgs, masks in self.val_loader:
+            for imgs, masks in tqdm(self.val_loader, desc="Validation", leave=False):
+                imgs = imgs.to(self.device)
+                masks = masks.to(self.device)
+
                 output = self.model(imgs)
                 loss = self.criterion(output, masks)
                 epoch_loss += loss.item() * imgs.size(0)
-            
-            total_loss += epoch_loss / len(self.val_loader.dataset)
-            return total_loss
 
-    
+        total_loss = epoch_loss / len(self.val_loader.dataset)
+        return total_loss
+
     def fit(self):
         for epoch in range(1, self.epochs + 1):
             start_time = time.time()
 
-            train_loss = self._train_epochs()
-            test_loss = self._test_epochs()
+            train_loss = self._train_epoch()
+            val_loss = self._validate_epoch()
 
-            end_time = time.time() - start_time
+            elapsed = time.time() - start_time
 
-            # TODO сохранение модели
+            # TODO: сохранение модели
 
-            print(f"Epoch [{epoch}/{self.num_epochs}] - "
-                f"Train Loss: {train_loss:.4f} "
-                f"{'- Val Loss: ' + str(round(test_loss, 4)) if test_loss is not None else ''} "
-                f"- Time: {end_time:.1f}s")
+            print(f"Epoch [{epoch}/{self.epochs}] - "
+                  f"Train Loss: {train_loss:.4f} - "
+                  f"Val Loss: {val_loss:.4f} - "
+                  f"Time: {elapsed:.1f}s")
