@@ -2,9 +2,6 @@ from torch.utils.data import Dataset, DataLoader
 from torchvision.datasets import Cityscapes, VOCDetection
 import torchvision.transforms as transforms
 
-from src.utils.process import process_item
-
-
 class CityscapesDataset(Dataset):
     """
     Класс для работы с датасетом Cityscapes.
@@ -63,7 +60,6 @@ class CityscapesDataset(Dataset):
     def __getitem__(self, index):
         """Возвращает элементы image и target по заданному индексу"""
         img, smnt = self.dataset[index]
-        img, smnt = process_item(img, smnt)
         return img, smnt
     
 
@@ -91,10 +87,16 @@ class CityscapesDataset(Dataset):
         if transform is None:
             transform = transforms.Compose([
                 transforms.ToTensor(),
-                transforms.Resize((512, 1024)),
+                transforms.Resize((256, 512)),
                 transforms.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225))
-                ])
-            
+            ])
+
+        if target_transform is None:
+            target_transform = transforms.Compose([
+                transforms.PILToTensor(),
+                transforms.Resize((256, 512), interpolation=transforms.InterpolationMode.NEAREST),
+            ])
+
         train_dataset = CityscapesDataset(root=root, split='train', transform=transform, target_transform=target_transform)
         val_dataset = CityscapesDataset(root=root, split='val', transform=transform, target_transform=target_transform)
 

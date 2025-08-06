@@ -6,14 +6,6 @@ class IoUMetric(Metric):
         pass
 
 
-    def update(self):
-        pass
-
-    
-    def reset(self):
-        pass
-
-
-    def compute(self):
-        print('hello')
+    def __call__(self, *args, **kwds):
+        return super().__call__(*args, **kwds)
 
